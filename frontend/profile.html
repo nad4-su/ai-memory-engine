@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - AI Memory Engine</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🧠</span>
+                    <span>Memory Engine</span>
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="search.html" class="nav-link">
+                        <span class="nav-icon">🔍</span>
+                        <span>Search</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link active">
+                        <span class="nav-icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="history.html" class="nav-link">
+                        <span class="nav-icon">📜</span>
+                        <span>History</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="settings.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <div class="flex-between">
+                    <div>
+                        <h1 class="page-title">Your Profile</h1>
+                        <p class="page-subtitle">Interests, patterns, and decision style</p>
+                    </div>
+                    <button id="trigger-profiling" class="btn btn-primary">🔄 Run Analysis</button>
+                </div>
+            </div>
+
+            <!-- Interests -->
+            <div class="mb-4">
+                <h2 class="mb-3" style="font-size: 1.5rem; font-weight: 600;">Interests & Topics</h2>
+                <div id="interests-list" class="grid grid-2">
+                    <!-- Loaded by profile.js -->
+                    <div class="card">
+                        <p style="text-align: center; color: var(--text-secondary);">
+                            Loading interests...
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Behavior Patterns -->
+            <div class="mb-4">
+                <h2 class="mb-3" style="font-size: 1.5rem; font-weight: 600;">Behavior Patterns</h2>
+                <div class="card">
+                    <h3 class="mb-3" style="font-weight: 600;">Activity Heatmap</h3>
+                    <div id="activity-heatmap">
+                        <p style="color: var(--text-secondary);">Loading heatmap...</p>
+                    </div>
+                    
+                    <div class="grid grid-2 mt-3">
+                        <div>
+                            <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">Peak Hours</h4>
+                            <p id="peak-hours" style="color: var(--text-secondary);">-</p>
+                        </div>
+                        <div>
+                            <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">Preferred Topics</h4>
+                            <div id="preferred-topics">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decision Style -->
+            <div>
+                <h2 class="mb-3" style="font-size: 1.5rem; font-weight: 600;">Decision Style</h2>
+                <div id="decision-style">
+                    <div class="card">
+                        <p style="text-align: center; color: var(--text-secondary);">
+                            Loading decision style...
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/nav.js"></script>
+    <script src="js/profile.js"></script>
+</body>
+</html>

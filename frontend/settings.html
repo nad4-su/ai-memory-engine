@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - AI Memory Engine</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🧠</span>
+                    <span>Memory Engine</span>
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="search.html" class="nav-link">
+                        <span class="nav-icon">🔍</span>
+                        <span>Search</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link">
+                        <span class="nav-icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="history.html" class="nav-link">
+                        <span class="nav-icon">📜</span>
+                        <span>History</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="settings.html" class="nav-link active">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Settings</h1>
+                <p class="page-subtitle">Configuration and system controls</p>
+            </div>
+
+            <!-- LLM Provider -->
+            <div class="card mb-4">
+                <h2 class="mb-3" style="font-size: 1.25rem; font-weight: 600;">LLM Provider</h2>
+                <div id="llm-config">
+                    <p style="color: var(--text-secondary);">Loading configuration...</p>
+                </div>
+                <div class="alert alert-info mt-3">
+                    <strong>ℹ️ Note:</strong> LLM settings are configured via environment variables. Edit your <code>.env</code> file and restart services to apply changes.
+                </div>
+            </div>
+
+            <!-- Schedule -->
+            <div class="card mb-4">
+                <h2 class="mb-3" style="font-size: 1.25rem; font-weight: 600;">Schedule</h2>
+                <div id="schedule-status" class="grid grid-2">
+                    <div>
+                        <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">Profiler</h3>
+                        <p id="profiler-cron" style="color: var(--text-secondary);">Loading...</p>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">Advisor</h3>
+                        <p id="advisor-cron" style="color: var(--text-secondary);">Loading...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Sources -->
+            <div class="card mb-4">
+                <h2 class="mb-3" style="font-size: 1.25rem; font-weight: 600;">Data Sources</h2>
+                <div id="data-sources-status">
+                    <p style="color: var(--text-secondary);">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Manual Triggers -->
+            <div class="card">
+                <h2 class="mb-3" style="font-size: 1.25rem; font-weight: 600;">Manual Triggers</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    Run tasks manually without waiting for scheduled execution.
+                </p>
+                <div class="grid grid-3">
+                    <button id="trigger-ingest" class="btn btn-outline">
+                        📥 Collect Data
+                    </button>
+                    <button id="trigger-profiling" class="btn btn-outline">
+                        👤 Run Profiling
+                    </button>
+                    <button id="trigger-advisor" class="btn btn-outline">
+                        💡 Generate Suggestions
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/nav.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadSettings();
+            
+            // Setup trigger buttons
+            document.getElementById('trigger-ingest')?.addEventListener('click', async (e) => {
+                setLoading(e.target, true);
+                try {
+                    await api.triggerDataCollection();
+                    showToast('Data collection triggered', 'success');
+                } catch (error) {
+                    handleError(error, 'Trigger Ingest');
+                } finally {
+                    e.target.innerHTML = '📥 Collect Data';
+                    e.target.disabled = false;
+                }
+            });
+            
+            document.getElementById('trigger-profiling')?.addEventListener('click', async (e) => {
+                setLoading(e.target, true);
+                try {
+                    await api.triggerProfiling();
+                    showToast('Profiling triggered', 'success');
+                } catch (error) {
+                    handleError(error, 'Trigger Profiling');
+                } finally {
+                    e.target.innerHTML = '👤 Run Profiling';
+                    e.target.disabled = false;
+                }
+            });
+            
+            document.getElementById('trigger-advisor')?.addEventListener('click', async (e) => {
+                setLoading(e.target, true);
+                try {
+                    await api.triggerAdvisor();
+                    showToast('Advisor triggered', 'success');
+                } catch (error) {
+                    handleError(error, 'Trigger Advisor');
+                } finally {
+                    e.target.innerHTML = '💡 Generate Suggestions';
+                    e.target.disabled = false;
+                }
+            });
+        });
+        
+        async function loadSettings() {
+            try {
+                // Load config
+                const config = await api.getConfig();
+                document.getElementById('llm-config').innerHTML = `
+                    <div class="grid grid-2">
+                        <div>
+                            <strong>Provider:</strong> ${config.llm_provider || 'Unknown'}
+                        </div>
+                        <div>
+                            <strong>Model:</strong> ${config.llm_model || 'Unknown'}
+                        </div>
+                        <div>
+                            <strong>Embedding:</strong> ${config.embedding_provider || 'Same as LLM'}
+                        </div>
+                        <div>
+                            <strong>Embedding Model:</strong> ${config.embedding_model || 'Default'}
+                        </div>
+                    </div>
+                `;
+                
+                // Load schedule
+                const schedule = await api.getScheduleStatus();
+                document.getElementById('profiler-cron').textContent = schedule.profiler_cron || 'Not configured';
+                document.getElementById('advisor-cron').textContent = schedule.advisor_cron || 'Not configured';
+                
+                // Data sources
+                document.getElementById('data-sources-status').innerHTML = `
+                    <div class="grid grid-2">
+                        <div>
+                            <span class="${config.obsidian_enabled ? 'badge-success' : 'badge-warning'}">
+                                ${config.obsidian_enabled ? '✓' : '✗'} Obsidian Vault
+                            </span>
+                        </div>
+                        <div>
+                            <span class="${config.bookmark_enabled ? 'badge-success' : 'badge-warning'}">
+                                ${config.bookmark_enabled ? '✓' : '✗'} Bookmarks API
+                            </span>
+                        </div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Failed to load settings:', error);
+            }
+        }
+    </script>
+</body>
+</html>

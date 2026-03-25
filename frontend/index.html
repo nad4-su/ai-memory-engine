@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Memory Engine - Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🧠</span>
+                    <span>Memory Engine</span>
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link active">
+                        <span class="nav-icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="search.html" class="nav-link">
+                        <span class="nav-icon">🔍</span>
+                        <span>Search</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link">
+                        <span class="nav-icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="history.html" class="nav-link">
+                        <span class="nav-icon">📜</span>
+                        <span>History</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="settings.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Dashboard</h1>
+                <p class="page-subtitle">Your personalized AI memory insights</p>
+            </div>
+
+            <!-- System Status -->
+            <div class="grid grid-3 mb-4">
+                <div class="card stat-card">
+                    <div class="stat-label">LLM Status</div>
+                    <div class="stat-value" style="font-size: 1.5rem;">
+                        <span id="llm-status" class="card-badge badge-success">Connected</span>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-label">Total Memories</div>
+                    <div class="stat-value" id="memory-count">0</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-label">Last Analysis</div>
+                    <div class="stat-value" style="font-size: 1rem; color: var(--text-secondary);" id="last-analysis">Never</div>
+                </div>
+            </div>
+
+            <!-- Today's Suggestions -->
+            <div class="mb-4">
+                <div class="flex-between mb-3">
+                    <h2 style="font-size: 1.5rem; font-weight: 600;">Today's Suggestions</h2>
+                    <button id="refresh-btn" class="btn btn-outline">🔄 Refresh</button>
+                </div>
+                <div id="suggestions-container" class="grid grid-2">
+                    <!-- Suggestions loaded by dashboard.js -->
+                    <div class="card">
+                        <p style="text-align: center; color: var(--text-secondary);">
+                            Loading suggestions...
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Interests -->
+            <div>
+                <h2 class="mb-3" style="font-size: 1.5rem; font-weight: 600;">Top Interests</h2>
+                <div class="card">
+                    <div id="interests-container">
+                        <!-- Interests loaded by dashboard.js -->
+                        <p style="text-align: center; color: var(--text-secondary);">
+                            Loading interests...
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/nav.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search - AI Memory Engine</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🧠</span>
+                    <span>Memory Engine</span>
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="search.html" class="nav-link active">
+                        <span class="nav-icon">🔍</span>
+                        <span>Search</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link">
+                        <span class="nav-icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="history.html" class="nav-link">
+                        <span class="nav-icon">📜</span>
+                        <span>History</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="settings.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Search Memories</h1>
+                <p class="page-subtitle">Semantic search across all your data</p>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    class="form-input search-input" 
+                    placeholder="Search memories, conversations, documents..."
+                    autocomplete="off"
+                >
+            </div>
+
+            <!-- Filters -->
+            <div class="flex-between mb-3">
+                <div class="form-group" style="margin: 0; min-width: 200px;">
+                    <select id="source-filter" class="form-select">
+                        <option value="all">All Sources</option>
+                        <option value="conversation">Conversations</option>
+                        <option value="document">Documents</option>
+                        <option value="bookmark">Bookmarks</option>
+                    </select>
+                </div>
+                <button id="search-btn" class="btn btn-primary">Search</button>
+            </div>
+
+            <!-- Results -->
+            <div id="results-container">
+                <div class="card">
+                    <p style="text-align: center; color: var(--text-secondary);">
+                        Enter a search query to find relevant memories.
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/nav.js"></script>
+    <script src="js/search.js"></script>
+</body>
+</html>
