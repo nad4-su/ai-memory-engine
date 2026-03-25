@@ -32,14 +32,27 @@ class ConversationParser:
                 items = [data]
         except json.JSONDecodeError:
             # Try JSONL (one JSON object per line)
+            json_found = False
             for line in content.strip().split("\n"):
                 if not line.strip():
                     continue
                 try:
                     item = json.loads(line)
                     items.append(item)
+                    json_found = True
                 except json.JSONDecodeError:
                     continue
+            
+            # Fallback: treat as plain text conversation
+            if not json_found and content.strip():
+                return [{
+                    "text": content.strip(),
+                    "metadata": {
+                        **metadata,
+                        "item_index": 0,
+                        "source_type": "conversation",
+                    }
+                }]
         
         # Extract text from each item
         results = []
