@@ -3,7 +3,7 @@ Pattern Detector — Detect behavioral patterns (time, day, decision style)
 """
 import logging
 from collections import Counter, defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List
 
 import asyncpg
@@ -22,7 +22,7 @@ class PatternDetector:
         - preferred_topics: Most frequently mentioned topics
         - decision_style: quick|deliberate|delegating
         """
-        cutoff = datetime.utcnow() - timedelta(days=days)
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
 
         async with self.db.acquire() as conn:
             rows = await conn.fetch(
@@ -110,12 +110,15 @@ class PatternDetector:
         delegate_count = 0
 
         for row in activity_rows[:100]:  # Limit to recent 100
-            content = row["content"].lower()
-            if any(kw in content for kw in quick_keywords):
+            content = row.get("content") or ""
+            if not content:
+                continue
+            content_lower = content.lower()
+            if any(kw in content_lower for kw in quick_keywords):
                 quick_count += 1
-            if any(kw in content for kw in deliberate_keywords):
+            if any(kw in content_lower for kw in deliberate_keywords):
                 deliberate_count += 1
-            if any(kw in content for kw in delegate_keywords):
+            if any(kw in content_lower for kw in delegate_keywords):
                 delegate_count += 1
 
         # Determine dominant style

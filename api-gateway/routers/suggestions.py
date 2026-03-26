@@ -3,6 +3,7 @@ Suggestions endpoints
 """
 from typing import List, Optional
 from fastapi import APIRouter, Request, HTTPException
+import httpx
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -117,3 +118,15 @@ async def submit_feedback(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to submit feedback: {str(e)}")
+
+ADVISOR_URL = "http://advisor-service:8003"
+
+@router.post("/advisor/generate")
+async def trigger_advisor():
+    """Trigger advisor suggestion generation manually"""
+    try:
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            resp = await client.post(f"{ADVISOR_URL}/api/v1/advisor/generate")
+            return resp.json()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Advisor service error: {str(e)}")

@@ -3,25 +3,30 @@
 
 CREATE TABLE IF NOT EXISTS user_profile (
     id SERIAL PRIMARY KEY,
+    user_id VARCHAR(100) DEFAULT 'default' UNIQUE,
     profile_data JSONB NOT NULL DEFAULT '{}',
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS interests (
     id SERIAL PRIMARY KEY,
+    user_id VARCHAR(100) DEFAULT 'default',
     topic VARCHAR(200) NOT NULL,
     category VARCHAR(100),
     intensity FLOAT DEFAULT 0,
     mention_count INT DEFAULT 0,
+    evidence TEXT,
     first_seen TIMESTAMPTZ,
     last_seen TIMESTAMPTZ,
     trend VARCHAR(20) DEFAULT 'stable',
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_interests_topic ON interests(topic);
 CREATE INDEX IF NOT EXISTS idx_interests_category ON interests(category);
 CREATE INDEX IF NOT EXISTS idx_interests_intensity ON interests(intensity DESC);
+ALTER TABLE interests ADD CONSTRAINT IF NOT EXISTS interests_user_topic_unique UNIQUE (user_id, topic);
 
 CREATE TABLE IF NOT EXISTS suggestions (
     id SERIAL PRIMARY KEY,
@@ -52,7 +57,10 @@ CREATE INDEX IF NOT EXISTS idx_decisions_created ON decisions(created_at DESC);
 
 CREATE TABLE IF NOT EXISTS ingest_log (
     id SERIAL PRIMARY KEY,
+    user_id VARCHAR(100) DEFAULT 'default',
     source VARCHAR(100),
+    content TEXT,
+    metadata JSONB DEFAULT '{}',
     item_count INT,
     vector_count INT,
     status VARCHAR(50),

@@ -3,7 +3,7 @@ Analyzer — LLM-based conversation/activity analysis
 """
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import asyncpg
@@ -37,7 +37,7 @@ class Analyzer:
         logger.info(f"Analyzing activity for user={user_id}, days={days}")
 
         # 1. Fetch recent logs from PostgreSQL
-        cutoff = datetime.utcnow() - timedelta(days=days)
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
         async with self.db.acquire() as conn:
             rows = await conn.fetch(
                 """
@@ -128,9 +128,10 @@ JSON만 반환하세요. 다른 텍스트는 포함하지 마세요."""
         """Build activity context text for LLM."""
         parts = ["### PostgreSQL 수집 로그:"]
         for row in db_rows[:50]:  # Limit to avoid token overflow
-            content = row["content"]
+            content = row["content"] or ""
             created = row["created_at"].strftime("%Y-%m-%d %H:%M")
-            parts.append(f"[{created}] {content[:200]}")
+            if content:
+                parts.append(f"[{created}] {content[:200]}")
 
         if qdrant_chunks:
             parts.append("\n### Qdrant 대화 청크:")

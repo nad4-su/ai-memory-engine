@@ -2,7 +2,7 @@
 Interest Tracker — Calculate interest intensity and trends
 """
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Tuple
 
 import asyncpg
@@ -21,7 +21,7 @@ class InterestTracker:
         Calculate interest intensity based on mention frequency and recency.
         Formula: intensity = (mention_count × recency_weight) / max_value
         """
-        cutoff = datetime.utcnow() - timedelta(days=days)
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
 
         async with self.db.acquire() as conn:
             rows = await conn.fetch(
@@ -42,7 +42,7 @@ class InterestTracker:
             return 0.0
 
         # Recency weighting
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         total_weight = 0.0
         for row in rows:
             created = row["created_at"]
@@ -65,8 +65,8 @@ class InterestTracker:
         Compare this week vs last week to detect rising/falling/stable/new interests.
         Returns: [{topic, direction, reason}]
         """
-        this_week_start = datetime.utcnow() - timedelta(days=7)
-        last_week_start = datetime.utcnow() - timedelta(days=14)
+        this_week_start = datetime.now(timezone.utc) - timedelta(days=7)
+        last_week_start = datetime.now(timezone.utc) - timedelta(days=14)
 
         async with self.db.acquire() as conn:
             # Get topics from interests table
@@ -82,7 +82,7 @@ class InterestTracker:
         trends = []
         for topic in topics:
             this_week = await self._count_mentions(
-                user_id, topic, this_week_start, datetime.utcnow()
+                user_id, topic, this_week_start, datetime.now(timezone.utc)
             )
             last_week = await self._count_mentions(
                 user_id, topic, last_week_start, this_week_start

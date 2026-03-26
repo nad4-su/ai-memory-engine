@@ -4,8 +4,10 @@ User profile endpoints
 from typing import List, Optional
 from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel
+import httpx
 
 router = APIRouter()
+PROFILER_URL = "http://profiler-service:8002"
 
 
 class Interest(BaseModel):
@@ -96,3 +98,25 @@ async def get_interests(
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch interests: {str(e)}")
+
+
+@router.post("/profiler/analyze")
+async def trigger_analysis():
+    """Trigger profiler analysis manually"""
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(f"{PROFILER_URL}/api/v1/profiler/analyze", json={})
+            return resp.json()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Profiler service error: {str(e)}")
+
+
+@router.get("/profiler/status")
+async def profiler_status():
+    """Get profiler status"""
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(f"{PROFILER_URL}/api/v1/profiler/status")
+            return resp.json()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Profiler service error: {str(e)}")

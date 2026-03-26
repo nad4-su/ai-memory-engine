@@ -170,6 +170,18 @@ async def ingest_single(request: IngestRequest):
         )
         total_chunks += count
     
+    # Log to database
+    try:
+        import json
+        async with db_pool.acquire() as conn:
+            await conn.execute("""
+                INSERT INTO ingest_log (user_id, source, content, metadata, item_count, vector_count, status)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)
+            """, "default", request.source, request.content[:5000], 
+                json.dumps(request.metadata), len(items), total_chunks, "success")
+    except Exception as e:
+        logger.warning(f"Failed to log ingest: {e}")
+    
     return {
         "status": "success",
         "source": request.source,
