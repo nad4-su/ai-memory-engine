@@ -12,9 +12,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         triggerBtn.addEventListener('click', async () => {
             setLoading(triggerBtn, true);
             try {
-                await api.triggerProfiling();
-                showToast('Profiling triggered successfully', 'success');
-                setTimeout(() => loadProfile(), 2000);
+                const result = await api.request('/profiler/analyze', { method: 'POST' });
+                showToast('분석 완료! 프로필을 새로고침합니다.', 'success');
+                setTimeout(() => loadProfile(), 1000);
             } catch (error) {
                 handleError(error, 'Trigger Profiling');
             } finally {
@@ -51,35 +51,42 @@ async function loadInterests() {
         if (!interests || interests.length === 0) {
             container.innerHTML = `
                 <p style="text-align: center; color: var(--text-secondary); padding: 2rem;">
-                    No interests detected yet. The system will learn from your interactions over time.
+                    아직 관심사가 감지되지 않았습니다. 대화가 쌓이면 자동으로 학습합니다.
                 </p>
             `;
             return;
         }
         
-        container.innerHTML = interests.map(interest => `
-            <div class="card">
-                <div class="flex-between mb-2">
-                    <h3 style="font-size: 1.125rem; font-weight: 600;">${interest.name}</h3>
-                    <span class="card-badge badge-info">
-                        ${getTrendIcon(interest.trend)} ${Math.round(interest.strength * 100)}%
-                    </span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${interest.strength * 100}%"></div>
-                </div>
-                ${interest.keywords ? `
-                    <div style="margin-top: 0.75rem;">
-                        ${interest.keywords.map(kw => `<span class="tag">${kw}</span>`).join('')}
+        container.innerHTML = interests.map(interest => {
+            const name = interest.topic || interest.name || 'Unknown';
+            const strength = interest.intensity || interest.strength || 0;
+            const trend = interest.trend || 'stable';
+            const category = interest.category || '';
+            const mentions = interest.mention_count || 0;
+            
+            return `
+                <div class="card">
+                    <div class="flex-between mb-2">
+                        <h3 style="font-size: 1.125rem; font-weight: 600;">${name}</h3>
+                        <span class="card-badge badge-info">
+                            ${getTrendIcon(trend)} ${Math.round(strength * 100)}%
+                        </span>
                     </div>
-                ` : ''}
-            </div>
-        `).join('');
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${strength * 100}%"></div>
+                    </div>
+                    <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        ${category ? `<span class="tag">${category}</span>` : ''}
+                        ${mentions > 0 ? `<span class="tag">언급 ${mentions}회</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
         
     } catch (error) {
         console.error('Failed to load interests:', error);
         document.getElementById('interests-list').innerHTML = `
-            <div class="alert alert-warning">Failed to load interests.</div>
+            <div class="alert alert-warning">관심사 로드에 실패했습니다.</div>
         `;
     }
 }
@@ -89,39 +96,54 @@ async function loadInterests() {
  */
 async function loadBehaviorPatterns() {
     try {
-        const patterns = await api.getBehaviorPatterns();
+        // profiler/status에서 last_analysis 결과를 가져옴
+        const status = await api.request('/profiler/status');
         const container = document.getElementById('patterns-container');
+        const lastAnalysis = status?.last_analysis;
         
-        if (!patterns) {
+        if (!lastAnalysis || !lastAnalysis.result || !lastAnalysis.result.patterns) {
             container.innerHTML = `
-                <p style="color: var(--text-secondary);">No patterns detected yet.</p>
+                <p style="color: var(--text-secondary);">아직 패턴이 감지되지 않았습니다. "Run Analysis"를 실행해보세요.</p>
             `;
             return;
         }
         
-        // Activity heatmap
-        if (patterns.activity_by_hour) {
-            const heatmap = createActivityHeatmap(patterns.activity_by_hour);
-            document.getElementById('activity-heatmap').innerHTML = heatmap;
+        const patterns = lastAnalysis.result.patterns;
+        
+        // Activity heatmap from active_hours
+        const heatmapEl = document.getElementById('activity-heatmap');
+        if (heatmapEl && patterns.active_hours) {
+            const activityData = {};
+            patterns.active_hours.forEach(h => { activityData[h] = (activityData[h] || 0) + 1; });
+            heatmapEl.innerHTML = createActivityHeatmap(activityData);
+        } else if (heatmapEl) {
+            heatmapEl.innerHTML = '<p style="color: var(--text-secondary);">데이터 수집 중...</p>';
         }
         
         // Peak hours
-        if (patterns.peak_hours) {
-            document.getElementById('peak-hours').textContent = 
-                patterns.peak_hours.map(h => `${h}:00`).join(', ');
+        const peakEl = document.getElementById('peak-hours');
+        if (peakEl && patterns.active_hours) {
+            peakEl.textContent = patterns.active_hours.map(h => `${h}:00`).join(', ');
+        } else if (peakEl) {
+            peakEl.textContent = '-';
         }
         
         // Preferred topics
-        if (patterns.preferred_topics) {
-            document.getElementById('preferred-topics').innerHTML = 
-                patterns.preferred_topics.map(t => `<span class="tag">${t}</span>`).join('');
+        const topicsEl = document.getElementById('preferred-topics');
+        if (topicsEl && patterns.preferred_topics) {
+            topicsEl.innerHTML = patterns.preferred_topics.map(t => `<span class="tag">${t}</span>`).join('');
+        } else if (topicsEl) {
+            topicsEl.textContent = '-';
         }
         
     } catch (error) {
         console.error('Failed to load patterns:', error);
-        document.getElementById('patterns-container').innerHTML = `
-            <p style="color: var(--text-secondary);">Unable to load patterns.</p>
-        `;
+        const container = document.getElementById('patterns-container');
+        if (container) {
+            container.innerHTML = `
+                <p style="color: var(--text-secondary);">패턴 로드에 실패했습니다.</p>
+            `;
+        }
     }
 }
 
@@ -160,40 +182,29 @@ function createActivityHeatmap(activityData) {
  */
 async function loadDecisionStyle() {
     try {
-        const style = await api.getDecisionStyle();
+        const status = await api.request('/profiler/status');
         const container = document.getElementById('decision-style');
+        const lastAnalysis = status?.last_analysis;
         
-        if (!style) {
+        const decisionStyle = lastAnalysis?.result?.patterns?.decision_style;
+        
+        if (!decisionStyle || decisionStyle === 'unknown') {
             container.innerHTML = `
-                <p style="color: var(--text-secondary);">Not enough data to determine decision style.</p>
+                <p style="color: var(--text-secondary);">데이터가 충분하지 않아 의사결정 스타일을 판단할 수 없습니다.</p>
             `;
             return;
         }
         
         const styles = {
-            analytical: {
-                icon: '📊',
-                title: 'Analytical',
-                description: 'You prefer data-driven decisions and thorough analysis.',
-            },
-            intuitive: {
-                icon: '💡',
-                title: 'Intuitive',
-                description: 'You trust your gut feeling and experience.',
-            },
-            balanced: {
-                icon: '⚖️',
-                title: 'Balanced',
-                description: 'You combine logic and intuition in decision-making.',
-            },
-            collaborative: {
-                icon: '🤝',
-                title: 'Collaborative',
-                description: 'You value input from others before deciding.',
-            },
+            '빠른결정': { icon: '⚡', title: '빠른 결정형', description: '빠르게 판단하고 즉시 실행하는 스타일입니다.' },
+            '숙고형': { icon: '🤔', title: '숙고형', description: '신중하게 분석하고 검토한 후 결정하는 스타일입니다.' },
+            '위임형': { icon: '🤝', title: '위임형', description: '다른 사람의 의견을 구하고 협력적으로 결정하는 스타일입니다.' },
+            'analytical': { icon: '📊', title: 'Analytical', description: '데이터 기반으로 철저히 분석 후 결정합니다.' },
+            'intuitive': { icon: '💡', title: 'Intuitive', description: '경험과 직감을 신뢰하여 결정합니다.' },
+            'balanced': { icon: '⚖️', title: 'Balanced', description: '논리와 직감을 균형 있게 활용합니다.' },
         };
         
-        const styleInfo = styles[style.type] || styles.balanced;
+        const styleInfo = styles[decisionStyle] || { icon: '🧠', title: decisionStyle, description: '' };
         
         container.innerHTML = `
             <div class="card">
@@ -201,22 +212,16 @@ async function loadDecisionStyle() {
                     <div style="font-size: 3rem; margin-bottom: 1rem;">${styleInfo.icon}</div>
                     <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">${styleInfo.title}</h3>
                     <p style="color: var(--text-secondary);">${styleInfo.description}</p>
-                    ${style.confidence ? `
-                        <div style="margin-top: 1rem;">
-                            <span class="card-badge badge-info">
-                                ${Math.round(style.confidence * 100)}% confidence
-                            </span>
-                        </div>
-                    ` : ''}
                 </div>
             </div>
         `;
         
     } catch (error) {
         console.error('Failed to load decision style:', error);
-        document.getElementById('decision-style').innerHTML = `
-            <p style="color: var(--text-secondary);">Unable to determine decision style.</p>
-        `;
+        const el = document.getElementById('decision-style');
+        if (el) {
+            el.innerHTML = `<p style="color: var(--text-secondary);">의사결정 스타일을 판단할 수 없습니다.</p>`;
+        }
     }
 }
 
