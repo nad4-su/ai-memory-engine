@@ -2,6 +2,8 @@
 
 **Your personal AI that learns from everything you read, write, and interact with.**
 
+> 🇰🇷 [한국어 README](README.ko.md)
+
 AI Memory Engine is a self-hosted, privacy-first intelligent memory system that ingests your conversations, documents, and bookmarks, builds a deep understanding of your interests and patterns, and proactively suggests personalized insights every day.
 
 ---
@@ -22,7 +24,7 @@ AI Memory Engine is a self-hosted, privacy-first intelligent memory system that 
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/ai-memory-engine.git
+git clone https://github.com/nad4-su/ai-memory-engine.git
 cd ai-memory-engine
 
 # 2. Configure environment
@@ -268,8 +270,8 @@ Contributions are welcome! Please:
 
 ## 📧 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/ai-memory-engine/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/ai-memory-engine/discussions)
+- **Issues**: [GitHub Issues](https://github.com/nad4-su/ai-memory-engine/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/nad4-su/ai-memory-engine/discussions)
 - **Email**: support@example.com
 
 ---
